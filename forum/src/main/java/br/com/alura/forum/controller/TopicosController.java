@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/topicos")
@@ -51,23 +52,35 @@ public class TopicosController {
     }
 
     @GetMapping("/{id}")
-    public DetalhesDoTopicoDto detalhar(@PathVariable Long id){ //Denotar que será recebido como URL.
-        Topico topico = topicoRepository.getById(id);
-        return new DetalhesDoTopicoDto(topico);
+    public ResponseEntity<Object> detalhar(@PathVariable Long id){ //Denotar que será recebido como URL.
+        Optional<Topico> topico = topicoRepository.findById(id);
+        if(topico.isPresent()){
+            return ResponseEntity.ok(new DetalhesDoTopicoDto(topico.get()));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}") //Overwrite de recurso.
     @Transactional //Dispara a atualização no bd.
     public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form){
-        Topico topico = form.atualizar(id, topicoRepository);
+        Optional<Topico> optTopico = topicoRepository.findById(id);
+        if(optTopico.isPresent()){
+            Topico topico = form.atualizar(id, topicoRepository);
+            return ResponseEntity.ok(new TopicoDto(topico)); //Corpo devolvido como resposta.
+        }
+        return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok(new TopicoDto(topico)); //Corpo devolvido como resposta.
     }
 
     @DeleteMapping("/{id}") //Overwrite de recurso.
     @Transactional //Dispara a atualização no bd.
     public ResponseEntity<?> remover(@PathVariable Long id){
-        topicoRepository.deleteById(id);
-        return ResponseEntity.ok().build(); //Corpo devolvido como resposta.
+        Optional<Topico> optTopico = topicoRepository.findById(id);
+        if(optTopico.isPresent()){
+            topicoRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
