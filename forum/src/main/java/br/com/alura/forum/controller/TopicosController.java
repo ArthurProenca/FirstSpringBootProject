@@ -60,7 +60,7 @@ public class TopicosController {
 
         return ResponseEntity.notFound().build();
     }
-
+///
     @PutMapping("/{id}") //Overwrite de recurso.
     @Transactional //Dispara a atualização no bd.
     public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form){
